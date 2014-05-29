@@ -1,28 +1,19 @@
 package com.radiadesign.catalina.session;
 
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.LifecycleState;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Valve;
-import org.apache.catalina.Session;
+import org.apache.catalina.*;
 import org.apache.catalina.session.ManagerBase;
-
+import org.apache.catalina.util.LifecycleSupport;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
-
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 
 
 public class RedisSessionManager extends ManagerBase implements Lifecycle {
@@ -50,9 +41,9 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
   protected JedisPool connectionPool;
 
   protected RedisSessionHandlerValve handlerValve;
-  protected ThreadLocal<RedisSession> currentSession = new ThreadLocal<RedisSession>();
-  protected ThreadLocal<String> currentSessionId = new ThreadLocal<String>();
-  protected ThreadLocal<Boolean> currentSessionIsPersisted = new ThreadLocal<Boolean>();
+  protected ThreadLocal<RedisSession> currentSession = new ThreadLocal<>();
+  protected ThreadLocal<String> currentSessionId = new ThreadLocal<>();
+  protected ThreadLocal<Boolean> currentSessionIsPersisted = new ThreadLocal<>();
   protected Serializer serializer;
 
   protected static String name = "RedisSessionManager";
@@ -562,21 +553,12 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 
   private void initializeDatabaseConnection() throws LifecycleException {
     try {
-      JedisPoolConfig config = createJedisPoolConfig();
+      JedisPoolConfig config = new JedisPoolConfig();
       connectionPool = new JedisPool(config, getHost(), getPort(), getTimeout(), getPassword());
     } catch (Exception e) {
       e.printStackTrace();
       throw new LifecycleException("Error Connecting to Redis", e);
     }
-  }
-
-  public JedisPoolConfig createJedisPoolConfig() {
-	JedisPoolConfig config = new JedisPoolConfig();
-	config.setMaxWait(maxWait);
-	config.setMinIdle(minIdle);
-	config.setMaxIdle(maxIdle);
-	config.setMaxActive(maxActive);
-	return config;
   }
 
   private void initializeSerializer() throws ClassNotFoundException, IllegalAccessException, InstantiationException {

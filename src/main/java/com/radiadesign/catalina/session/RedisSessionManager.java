@@ -437,7 +437,6 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
         serializer.deserializeInto(data, session);
         session.setId(id);
         session.setNew(false);
-        session.setMaxInactiveInterval(getMaxInactiveInterval() * 1000);
         session.access();
         session.setValid(true);
         session.resetDirtyTracking();
@@ -496,8 +495,8 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 
       currentSessionIsPersisted.set(true);
 
-      log.trace("Setting expire timeout on session [" + redisSession.getId() + "] to " + getMaxInactiveInterval());
-      jedis.expire(binaryId, getMaxInactiveInterval());
+      log.trace("Setting expire timeout on session [" + redisSession.getId() + "] to " + redisSession.getMaxInactiveInterval());
+      jedis.expire(binaryId, redisSession.getMaxInactiveInterval());
 
       error = false;
     } catch (IOException e) {

@@ -62,8 +62,11 @@ public class RedisSession extends StandardSession {
 
   @Override
   public void removeAttribute(String name) {
-    dirty = true;
-    super.removeAttribute(name);
+    // avoid of setting a dirty flag, if an attribute already removed
+    if (getAttribute(name) != null) {
+      dirty = true;
+      super.removeAttribute(name);
+    }
   }
 
   @Override

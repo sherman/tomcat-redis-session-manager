@@ -491,12 +491,12 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
       Boolean isCurrentSessionPersisted = this.currentSessionIsPersisted.get();
       if (sessionIsDirty || (isCurrentSessionPersisted == null || !isCurrentSessionPersisted)) {
         jedis.set(binaryId, serializer.serializeFrom(redisSession));
+        jedis.expire(binaryId, redisSession.getMaxInactiveInterval());
       }
 
       currentSessionIsPersisted.set(true);
 
       log.trace("Setting expire timeout on session [" + redisSession.getId() + "] to " + redisSession.getMaxInactiveInterval());
-      jedis.expire(binaryId, redisSession.getMaxInactiveInterval());
 
       error = false;
     } catch (IOException e) {
